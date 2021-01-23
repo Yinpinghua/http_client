@@ -27,6 +27,7 @@ public:
 	bool request(const std::string& target, request_mod mod);
 	int  request_result();
 	std::string request_data();
+	std::string reason();
 private:
 	void close();
 	auto& socket();
