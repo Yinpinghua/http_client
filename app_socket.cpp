@@ -166,3 +166,9 @@ void app_socket<T>::close_https_socket()
 	boost::system::error_code ec;
 	https_stream_.shutdown(ec);
 }
+
+template<typename T>
+std::string app_socket<T>::reason()
+{
+	return res_->base().reason().to_string();
+}
