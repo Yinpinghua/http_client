@@ -11,12 +11,13 @@ namespace http = boost::beast::http;
 
 enum class request_mod
 {
-	get = 0,
+	get  = 0,
 	post = 1,
 };
 
-struct Http {};
+struct Http  {};
 struct Https {};
+
 template<typename T>
 class app_socket
 {
@@ -47,6 +48,6 @@ private:
 	boost::optional<http::response<http::string_body>>res_;
 };
 
-using http_client = app_socket<Http>;
+using http_client  = app_socket<Http>;
 using https_client = app_socket<Https>;
 #endif // http_socket_h__
