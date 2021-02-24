@@ -1,14 +1,7 @@
 #include "app_socket.h"
 
-#ifdef _DEBUG
-#pragma comment(lib, "crypt32")
-#pragma comment(lib, "libssl64MTd.lib")
-#pragma comment(lib, "libcrypto64MTd.lib")
-#else
-#pragma comment(lib, "crypt32")
-#pragma comment(lib, "libssl64MT.lib")
-#pragma comment(lib, "libcrypto64MT.lib")
-#endif
+#pragma comment(lib, "libcrypto.lib")
+#pragma comment(lib, "libssl.lib")
 
 template class app_socket<Http>;
 template class app_socket<Https>;
@@ -34,13 +27,13 @@ bool app_socket<T>::connect(const std::string& host, const std::string& port)
 {
 	if constexpr (is_http) {
 		return http_connect(host,port);
-	}else {
-		return https_connect(host, port);
 	}
+
+	return https_connect(host, port);
 }
 
 template<typename T>
-bool app_socket<T>::request(const std::string& target, request_mod mod)
+bool app_socket<T>::request(const std::string& target, request_mod mod,std::string body)
 {
 	http::request<http::string_body> req;
 	if (mod == request_mod::get) {
@@ -52,8 +45,13 @@ bool app_socket<T>::request(const std::string& target, request_mod mod)
 	}
 
 	req.target(target);
-	req.version(11);
 	req.set(http::field::host, host_);
+	if (!body.empty()){
+		req.body() = body;
+	}
+
+	req.prepare_payload();
+
 	boost::system::error_code ec;
 	http::write(socket(), req, ec);
 	if (ec) {
