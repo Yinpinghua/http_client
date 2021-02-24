@@ -33,7 +33,7 @@ bool app_socket<T>::connect(const std::string& host, const std::string& port)
 }
 
 template<typename T>
-bool app_socket<T>::request(const std::string& target, request_mod mod,std::string body)
+bool app_socket<T>::request(const std::string& target, request_mod mod,content_type content,std::string body)
 {
 	http::request<http::string_body> req;
 	if (mod == request_mod::get) {
@@ -46,11 +46,20 @@ bool app_socket<T>::request(const std::string& target, request_mod mod,std::stri
 
 	req.target(target);
 	req.set(http::field::host, host_);
+	if (content == content_type::json){
+		req.set(http::field::content_type, "application/json;charset=utf-8");
+	}else if (content == content_type::form_data){
+		req.set(http::field::content_type, "multipart/form-data;boundary=839227141510734175353540");
+		body = create_form_data_body();
+	}
+
 	if (!body.empty()){
 		req.body() = body;
 	}
 
 	req.prepare_payload();
+
+	std::string body_test = req.body();
 
 	boost::system::error_code ec;
 	http::write(socket(), req, ec);
@@ -170,3 +179,39 @@ std::string app_socket<T>::reason()
 {
 	return res_->base().reason().to_string();
 }
+
+template<typename T>
+void app_socket<T>::set_form_data(const std::string& key, const std::string value)
+{
+	form_datas_.emplace(key, value);
+}
+
+
+template<typename T>
+std::string app_socket<T>::create_form_data_body()
+{
+	std::string body;
+	std::string CRLF = "\r\n";
+
+	auto iter_begin = form_datas_.begin();
+	int count = 1;
+	for (;iter_begin != form_datas_.end();++iter_begin){
+		if (count == 1) {
+			body.append(std::string("--") + std::string("839227141510734175353540") + CRLF);
+		}
+
+		body.append("Content-Disposition: form-data; name=\"" +iter_begin->first + "\"" + CRLF);
+		body.append(CRLF);
+		body.append(iter_begin->second + CRLF);
+		if (count == form_datas_.size()) {
+			body.append("--" + std::string("839227141510734175353540") + "--" + CRLF);
+		}else {
+			body.append(std::string("--") + std::string("839227141510734175353540") + CRLF);
+		}
+		
+		++count;
+	}
+
+	return std::move(body);
+}
+
