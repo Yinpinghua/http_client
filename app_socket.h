@@ -25,7 +25,7 @@ public:
 	app_socket();
 	~app_socket();
 	bool connect(const std::string& host, const std::string& port);
-	bool request(const std::string& target, request_mod mod);
+	bool request(const std::string& target, request_mod mod,std::string body="");
 	int  request_result();
 	std::string request_data();
 	std::string reason();
