@@ -340,5 +340,38 @@ std::string app_socket<T>::url_decode(const std::string& value)
 	return std::move(result);
 }
 
+template<typename T>
+void app_socket<T>::set_url_request_param(const std::string& key, const std::string value)
+{
+	url_request_params_.emplace(key, value);
+}
+
+template<typename T>
+std::string app_socket<T>::create_new_url(const std::string& reg_url)
+{
+	if (url_request_params_.size() ==0){
+		return"";
+	}
+
+	std::string data=reg_url;
+	data.append("?");
+
+	size_t count = 1;
+	auto iter_begin = url_request_params_.begin();
+	for (;iter_begin != url_request_params_.end();++iter_begin){
+		data.append(iter_begin->first);
+		data.append("=");
+		data.append(iter_begin->second);
+		if (count < url_request_params_.size()){
+			data.append("&");
+		}
+
+		++count;
+	}
+
+	return std::move(data);
+}
+
+
 
 
