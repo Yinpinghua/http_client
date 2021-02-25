@@ -95,6 +95,10 @@ template<typename T>
 std::string app_socket<T>::request_data()
 {
 	std::string body = res_->body();
+	if (is_url_encode(body)){
+		return url_decode(body);
+	}
+
 	return std::move(body);
 }
 
@@ -273,6 +277,29 @@ std::string app_socket<T>::url_encode(const std::string& value)
 	for (auto& chr : value) {
 		if (!((chr >= '0' && chr <= '9') || (chr >= 'A' && chr <= 'Z') || (chr >= 'a' && chr <= 'z') || chr == '-' || chr == '.' || chr == '_' || chr == '~'))
 			result += std::string("%") + hex_chars[static_cast<unsigned char>(chr) >> 4] + hex_chars[static_cast<unsigned char>(chr) & 15];
+		else
+			result += chr;
+	}
+
+	return std::move(result);
+}
+
+template<typename T>
+std::string app_socket<T>::url_decode(const std::string& value)
+{
+	std::string result;
+	result.reserve(value.size() / 3 + (value.size() % 3)); // Minimum size of result
+
+	for (std::size_t i = 0; i < value.size(); ++i) {
+		auto& chr = value[i];
+		if (chr == '%' && i + 2 < value.size()) {
+			auto hex = value.substr(i + 1, 2);
+			auto decoded_chr = static_cast<char>(std::strtol(hex.c_str(), nullptr, 16));
+			result += decoded_chr;
+			i += 2;
+		}
+		else if (chr == '+')
+			result += ' ';
 		else
 			result += chr;
 	}
