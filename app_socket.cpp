@@ -49,8 +49,11 @@ bool app_socket<T>::request(const std::string& target, request_mod mod,content_t
 	if (content == content_type::json){
 		req.set(http::field::content_type, "application/json;charset=utf-8");
 	}else if (content == content_type::form_data){
-		req.set(http::field::content_type, "multipart/form-data;boundary=839227141510734175353540");
-		body = create_form_data_body();
+		std::string uuid = create_uuid();
+		std::string context_str = "multipart/form-data;boundary=";
+		context_str += uuid;
+		req.set(http::field::content_type,context_str);
+		body = create_form_data_body(uuid);
 	}
 
 	if (!body.empty()){
@@ -188,7 +191,7 @@ void app_socket<T>::set_form_data(const std::string& key, const std::string valu
 
 
 template<typename T>
-std::string app_socket<T>::create_form_data_body()
+std::string app_socket<T>::create_form_data_body(const std::string& uuid)
 {
 	std::string body;
 	std::string CRLF = "\r\n";
@@ -197,16 +200,16 @@ std::string app_socket<T>::create_form_data_body()
 	int count = 1;
 	for (;iter_begin != form_datas_.end();++iter_begin){
 		if (count == 1) {
-			body.append(std::string("--") + std::string("839227141510734175353540") + CRLF);
+			body.append(std::string("--") + uuid + CRLF);
 		}
 
 		body.append("Content-Disposition: form-data; name=\"" +iter_begin->first + "\"" + CRLF);
 		body.append(CRLF);
 		body.append(iter_begin->second + CRLF);
 		if (count == form_datas_.size()) {
-			body.append("--" + std::string("839227141510734175353540") + "--" + CRLF);
+			body.append("--" + uuid + "--" + CRLF);
 		}else {
-			body.append(std::string("--") + std::string("839227141510734175353540") + CRLF);
+			body.append(std::string("--") + uuid+ CRLF);
 		}
 		
 		++count;
@@ -214,4 +217,16 @@ std::string app_socket<T>::create_form_data_body()
 
 	return std::move(body);
 }
+
+template<typename T>
+std::string app_socket<T>::create_uuid()
+{
+	std::string str;
+	boost::uuids::uuid uuid = boost::uuids::random_generator_mt19937()();
+
+	str = boost::uuids::to_string(uuid);
+
+	return std::move(str);
+}
+
 
