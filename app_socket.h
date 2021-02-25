@@ -54,6 +54,10 @@ private:
 	std::string create_urlencoded_data_body();
 	std::string create_uuid();
 	std::string url_encode(const std::string& value);
+	bool is_url_encode(std::string str) {
+		return str.find("%") != std::string::npos || str.find("+") != std::string::npos;
+	}
+	std::string url_decode(const std::string& value);
 private:
 	static constexpr bool is_http = 
 		std::is_same<T,Http>::value;
