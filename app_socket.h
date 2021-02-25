@@ -22,8 +22,9 @@ enum class request_mod
 
 enum class content_type
 {
-	json = 0,
-	form_data = 1,
+	json            = 0,
+	form_data       = 1,
+	form_urlencoded = 2,
 };
 
 struct Http  {};
@@ -41,6 +42,7 @@ public:
 	std::string request_data();
 	std::string reason();
 	void set_form_data(const std::string& key, const std::string value);
+	void set_form_urlencoded_data(const std::string& key, const std::string value);
 private:
 	void close();
 	auto& socket();
@@ -49,7 +51,9 @@ private:
 	void close_http_socket();
 	void close_https_socket();
 	std::string create_form_data_body(const std::string &uuid);
+	std::string create_urlencoded_data_body();
 	std::string create_uuid();
+	std::string url_encode(const std::string& value);
 private:
 	static constexpr bool is_http = 
 		std::is_same<T,Http>::value;
@@ -61,6 +65,7 @@ private:
 	boost::beast::tcp_stream http_stream_;
 	boost::optional<http::response<http::string_body>>res_;
 	std::unordered_map<std::string, std::string>form_datas_;
+	std::unordered_map<std::string, std::string> form_urlencoded_datas_;
 };
 
 using http_client  = app_socket<Http>;
