@@ -203,6 +203,37 @@ void app_socket<T>::set_form_data(const std::string& key, const std::string valu
 }
 
 template<typename T>
+std::string app_socket<T>::get_cookie(const std::string&key,const std::string sub_key)
+{
+	std::string cookie;
+	auto cookies = res_.get().find(key)->value();
+	if (cookies.size() >0){
+		auto lscookie = cookies.data();
+
+		std::vector<std::string> fields;
+		std::map<std::string, std::string> field;
+		boost::split_regex(fields, lscookie, boost::regex(";"));
+		for (auto& it : fields) {
+			std::vector<std::string> ketvalue;
+			boost::split_regex(ketvalue, it, boost::regex("="));
+			if (ketvalue.size() <= 1)
+				continue;
+			boost::trim(ketvalue[0]);
+			auto start = ketvalue[1].find("\r");
+			if (start != std::string::npos)
+				ketvalue[1] = ketvalue[1].substr(0, start);
+			field[ketvalue[0]] = ketvalue[1];
+		}
+
+		auto iter_find = field.find(sub_key);
+		if (iter_find != field.end()){
+			cookie = iter_find->second;
+		}
+	}
+	return std::move(cookie);
+}
+
+template<typename T>
 void app_socket<T>::set_form_urlencoded_data(const std::string& key, const std::string value)
 {
 	form_urlencoded_datas_.emplace(key, value);
@@ -242,7 +273,7 @@ template<typename T>
 std::string app_socket<T>::create_urlencoded_data_body()
 {
 	std::string body;
-	int count = 1;
+	size_t count = 1;
 	auto iter_begin = form_urlencoded_datas_.begin();
 	for (;iter_begin != form_urlencoded_datas_.end();++iter_begin) {
 		body.append(iter_begin->first);
