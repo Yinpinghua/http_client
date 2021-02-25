@@ -95,7 +95,9 @@ template<typename T>
 std::string app_socket<T>::request_data()
 {
 	std::string body = res_->body();
-	if (is_url_encode(body)){
+
+	if (is_url_encode(body) && 
+		res_.get()[http::field::content_type] == "application/x-www-form-urlencoded"){
 		return url_decode(body);
 	}
 
