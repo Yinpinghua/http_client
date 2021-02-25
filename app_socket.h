@@ -1,12 +1,16 @@
 #ifndef http_socket_h__
 #define http_socket_h__
 
-#include <string>
 #include <boost/asio.hpp>
 #include <boost/beast/ssl.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.
 #include <unordered_map>
+#include <string>
 
 namespace http = boost::beast::http;
 
@@ -44,7 +48,8 @@ private:
 	bool https_connect(const std::string& host, const std::string& port);
 	void close_http_socket();
 	void close_https_socket();
-	std::string create_form_data_body();
+	std::string create_form_data_body(const std::string &uuid);
+	std::string create_uuid();
 private:
 	static constexpr bool is_http = 
 		std::is_same<T,Http>::value;
